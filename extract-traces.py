@@ -44,7 +44,10 @@ def show_stats(traces_dir):
         )
     )
 
-if __name__ == "__main__":
+def main():
     trace_ids = get_all_trace_ids(endpoint=ALL_TRACES_ENDPOINT)
     fetch_and_store_traces(trace_ids=trace_ids, dir_to_store_jsons=TRACES_DIR, endpoint=API_ENDPOINT)
     show_stats(traces_dir=TRACES_DIR)
+
+if __name__ == "__main__":
+    main()
