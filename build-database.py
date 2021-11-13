@@ -1,5 +1,6 @@
 import importlib
 import json
+import glob
 build_mysql_connection = importlib.import_module("build-mysql-connection")
 DB, DB_CURSOR = build_mysql_connection.main("original")
 
@@ -30,12 +31,40 @@ def create_tables():
             print("Executing: " + query)
             DB_CURSOR.execute(query)
 
-def populate_tables():
+def insert_field_in_db(field) -> int:
     pass
+    return 0
 
+def insert_log_in_db(log) -> int:
+    inserted_fields = []
+    for field in log["fields"]:
+        inserted_fields += [insert_field_in_db(field)]
+    return 0
+
+def insert_span_in_db(span) -> int:
+    inserted_logs = []
+    for log in span["logs"]:
+        inserted_logs += [insert_log_in_db(log)]
+    return 0
+
+def insert_trace_in_db(trace) -> int:
+    inserted_spans = []
+    for span in trace["spans"]:
+        inserted_spans += [insert_span_in_db(span)]
+    return 0
+
+def populate_tables(traces_dir):
+    files = glob.glob(traces_dir + "/*.json")
+    for file in files:
+        with open(file) as f:
+            traces = json.load(f)
+            for trace in traces["data"]:
+                id  = insert_trace_in_db(trace)
+                print("Inserted trace with id " + str(id))
+        break
 def main():
-    create_tables()
-    populate_tables()
+    # create_tables()
+    populate_tables("./traces")
 
 if __name__ == "__main__":
 	main()
