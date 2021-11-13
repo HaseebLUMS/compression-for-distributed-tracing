@@ -31,6 +31,7 @@ def create_tables():
             DB_CURSOR.execute(query)
 
 def populate_tables():
+    
     pass
 
 def main():
