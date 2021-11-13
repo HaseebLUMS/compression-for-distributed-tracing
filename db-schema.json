@@ -1,0 +1,26 @@
+{
+    "tableNames": ["trace", "traceHasSpan", "span", "spanHasLog", "log", "logHasField", "field"],
+    "tableData": {
+        "trace": [
+            "id", "canonicalId", "totalSpans"
+        ],
+        "traceHasSpan": [
+            "traceId", "spanId"
+        ],
+        "span": [
+            "id", "canonicalId", "operationName", "totalLogs"
+        ],
+        "spanHasLog": [
+            "spanId", "logId"
+        ],
+        "log": [
+            "id", "totalFields"
+        ],
+        "logHasField": [
+            "logId", "fieldId"
+        ],
+        "field": [
+            "id", "key", "value"
+        ]
+    }
+}
