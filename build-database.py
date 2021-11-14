@@ -1,9 +1,10 @@
 import importlib
 import json
 import glob
+from typing import Tuple, Union
 
 build_mysql_connection = importlib.import_module("build-mysql-connection")
-DB, DB_CURSOR = build_mysql_connection.main("original")
+DB, DB_CURSOR = build_mysql_connection.main("compressed")
 
 def get_create_table_query(table_name, fields):
     # TODO create foriegn keys
@@ -35,60 +36,135 @@ def create_tables():
             print("Executing: " + query)
             DB_CURSOR.execute(query)
 
-def insert_field_in_db(field) -> int:
+def get_id_if_field_already_inserted(field) -> Tuple[Union[int, None], bool]:
     DB_CURSOR.execute(
-        "INSERT INTO `field` (`key`, `value`) VALUES (%s, %s)",
+        "SELECT `id` FROM `field` WHERE `key` = %s and `value` = %s",
         (field["key"], field["value"])
     )
-    return get_last_insert_id()
+    res = DB_CURSOR.fetchone()
+    if res is not None:
+        return res[0], True
+    return None, False
+
+def get_id_if_log_already_inserted(inserted_fields) -> Tuple[Union[int, None], bool]:
+    inserted_fields = ",".join(sorted([str(x) for x in inserted_fields]))
+
+    DB_CURSOR.execute(
+        "SELECT `logId` from `logHasField` GROUP BY `logId` HAVING GROUP_CONCAT(DISTINCT fieldId ORDER BY fieldId) = %s",
+        (inserted_fields,)
+    )
+
+    res = DB_CURSOR.fetchone()
+    if res is not None:
+        return res[0], True
+    return None, False
+
+def get_id_if_span_already_inserted(inserted_logs) -> Tuple[Union[int, None], bool]:
+    inserted_logs = ",".join(sorted([str(x) for x in inserted_logs]))
+
+    DB_CURSOR.execute(
+        "SELECT `spanId` from `spanHasLog` GROUP BY `spanId` HAVING GROUP_CONCAT(DISTINCT `logId` ORDER BY `logId`) = %s",
+        (inserted_logs,)
+    )
+
+    res = DB_CURSOR.fetchone()
+    if res is not None:
+        return res[0], True
+    return None, False
+
+def get_id_if_trace_already_inserted(inserted_spans) -> Tuple[Union[int, None], bool]:
+    inserted_spans = ",".join(sorted([str(x) for x in inserted_spans]))
+
+    DB_CURSOR.execute(
+        "SELECT `traceId` from `traceHasSpan` GROUP BY `traceId` HAVING GROUP_CONCAT(DISTINCT `spanId` ORDER BY `spanId`) = %s",
+        (inserted_spans,)
+    )
+
+    res = DB_CURSOR.fetchone()
+    if res is not None:
+        return res[0], True
+    return None, False
+
+def insert_field_in_db(field) -> int:
+    res = get_id_if_field_already_inserted(field)
+    if res[1] == False:
+        DB_CURSOR.execute(
+            "INSERT INTO `field` (`key`, `value`) VALUES (%s, %s)",
+            (field["key"], field["value"])
+        )
+        DB.commit()
+        return get_last_insert_id()
+    else:
+        return res[0]
 
 def insert_log_in_db(log) -> int:
     inserted_fields = []
     for field in log["fields"]:
         inserted_fields += [insert_field_in_db(field)]
-    DB_CURSOR.execute(
-        "INSERT INTO `log` (`totalFields`) VALUES (%s)",
-        (len(inserted_fields),)
-    )
-    id = get_last_insert_id()
-    for fieldId in inserted_fields:
+    inserted_fields = list(set(inserted_fields))
+    
+    res = get_id_if_log_already_inserted(inserted_fields)
+    if res[1] == False:
         DB_CURSOR.execute(
-            "INSERT INTO `logHasField` (`logId`, `fieldId`) VALUES (%s, %s)",
-            (id, fieldId)
+            "INSERT INTO `log` (`totalFields`) VALUES (%s)",
+            (len(inserted_fields),)
         )
-    return id
+        id = get_last_insert_id()
+        for fieldId in inserted_fields:
+            DB_CURSOR.execute(
+                "INSERT INTO `logHasField` (`logId`, `fieldId`) VALUES (%s, %s)",
+                (id, fieldId)
+            )
+        DB.commit()
+        return id
+    else:
+        return res[0]
 
 def insert_span_in_db(span) -> int:
     inserted_logs = []
     for log in span["logs"]:
         inserted_logs += [insert_log_in_db(log)]
-    DB_CURSOR.execute(
-        "INSERT INTO `span` (`operationName`, `totalLogs`) VALUES (%s, %s)",
-        (span["operationName"], len(inserted_logs))
-    )
-    id = get_last_insert_id()
-    for logId in inserted_logs:
+    inserted_logs = list(set(inserted_logs))
+
+    res = get_id_if_span_already_inserted(inserted_logs)
+    if res[1] ==  False:
         DB_CURSOR.execute(
-            "INSERT INTO `spanHasLog` (`spanId`, `logId`) VALUES (%s, %s)",
-            (id, logId)
+            "INSERT INTO `span` (`operationName`, `totalLogs`) VALUES (%s, %s)",
+            (span["operationName"], len(inserted_logs))
         )
-    return id
+        id = get_last_insert_id()
+        for logId in inserted_logs:
+            DB_CURSOR.execute(
+                "INSERT INTO `spanHasLog` (`spanId`, `logId`) VALUES (%s, %s)",
+                (id, logId)
+            )
+        DB.commit()
+        return id
+    else:
+        return res[0]
 
 def insert_trace_in_db(trace) -> int:
     inserted_spans = []
     for span in trace["spans"]:
         inserted_spans += [insert_span_in_db(span)]
-    DB_CURSOR.execute(
-        "INSERT INTO `trace` (`totalSpans`) VALUES (%s)",
-        (len(inserted_spans),)
-    )
-    id = get_last_insert_id()
-    for spanId in inserted_spans:
+    inserted_spans = list(set(inserted_spans))
+
+    res = get_id_if_trace_already_inserted(inserted_spans)
+    if res[1] == False:
         DB_CURSOR.execute(
-            "INSERT INTO `traceHasSpan` (`traceId`, `spanId`) VALUES (%s, %s)",
-            (id, spanId)
+            "INSERT INTO `trace` (`totalSpans`) VALUES (%s)",
+            (len(inserted_spans),)
         )
-    return id
+        id = get_last_insert_id()
+        for spanId in inserted_spans:
+            DB_CURSOR.execute(
+                "INSERT INTO `traceHasSpan` (`traceId`, `spanId`) VALUES (%s, %s)",
+                (id, spanId)
+            )
+        DB.commit()
+        return id
+    else:
+        return res[0]
 
 def populate_tables(traces_dir):
     files = glob.glob(traces_dir + "/*.json")
@@ -96,10 +172,9 @@ def populate_tables(traces_dir):
         with open(file) as f:
             traces = json.load(f)
             for trace in traces["data"]:
-                id  = insert_trace_in_db(trace)
+                insert_trace_in_db(trace)
         if ((count % 10 == 0) or (count == len(files) - 1)):
-            #DB.commit()
-            print("Committing " + str(count) + " files.")
+            print("Completed " + str(count) + " files.")
 
 def main():
     create_tables()
