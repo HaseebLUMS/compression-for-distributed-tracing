@@ -8,7 +8,7 @@ original_db = "original"
 db = compressed_db
 
 build_mysql_connection = importlib.import_module("build-mysql-connection")
-DB, DB_CURSOR = build_mysql_connection.main(db)
+DB, DB_CURSOR = (None, None)
 
 def get_create_table_query(table_name, fields):
     # TODO create foriegn keys
@@ -188,9 +188,16 @@ def populate_tables(traces_dir):
         if ((count % 10 == 0) or (count == len(files) - 1)):
             print("Completed " + str(count) + " files.")
 
-def main():
+def main(db_type):
+    global db
+    global DB
+    global DB_CURSOR
+
+    db = db_type
+    DB, DB_CURSOR = build_mysql_connection.main(db)
+    
     create_tables()
     populate_tables("./traces")
 
 if __name__ == "__main__":
-	main()
+	main("original")
