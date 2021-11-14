@@ -2,13 +2,13 @@
     "tableNames": ["trace", "traceHasSpan", "span", "spanHasLog", "log", "logHasField", "field"],
     "tableData": {
         "trace": [
-            "id", "canonicalId", "totalSpans"
+            "id", "totalSpans"
         ],
         "traceHasSpan": [
             "traceId", "spanId"
         ],
         "span": [
-            "id", "canonicalId", "operationName", "totalLogs"
+            "id", "operationName", "totalLogs"
         ],
         "spanHasLog": [
             "spanId", "logId"
