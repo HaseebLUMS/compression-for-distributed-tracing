@@ -3,8 +3,12 @@ import json
 import glob
 from typing import Tuple, Union
 
+compressed_db = "compressed"
+original_db = "original"
+db = compressed_db
+
 build_mysql_connection = importlib.import_module("build-mysql-connection")
-DB, DB_CURSOR = build_mysql_connection.main("compressed")
+DB, DB_CURSOR = build_mysql_connection.main(db)
 
 def get_create_table_query(table_name, fields):
     # TODO create foriegn keys
@@ -37,6 +41,8 @@ def create_tables():
             DB_CURSOR.execute(query)
 
 def get_id_if_field_already_inserted(field) -> Tuple[Union[int, None], bool]:
+    if db != compressed_db:
+        return None, False
     DB_CURSOR.execute(
         "SELECT `id` FROM `field` WHERE `key` = %s and `value` = %s",
         (field["key"], field["value"])
@@ -47,6 +53,8 @@ def get_id_if_field_already_inserted(field) -> Tuple[Union[int, None], bool]:
     return None, False
 
 def get_id_if_log_already_inserted(inserted_fields) -> Tuple[Union[int, None], bool]:
+    if db != compressed_db:
+        return None, False
     inserted_fields = ",".join(sorted([str(x) for x in inserted_fields]))
 
     DB_CURSOR.execute(
@@ -60,6 +68,8 @@ def get_id_if_log_already_inserted(inserted_fields) -> Tuple[Union[int, None], b
     return None, False
 
 def get_id_if_span_already_inserted(inserted_logs) -> Tuple[Union[int, None], bool]:
+    if db != compressed_db:
+        return None, False
     inserted_logs = ",".join(sorted([str(x) for x in inserted_logs]))
 
     DB_CURSOR.execute(
@@ -73,6 +83,8 @@ def get_id_if_span_already_inserted(inserted_logs) -> Tuple[Union[int, None], bo
     return None, False
 
 def get_id_if_trace_already_inserted(inserted_spans) -> Tuple[Union[int, None], bool]:
+    if db != compressed_db:
+        return None, False
     inserted_spans = ",".join(sorted([str(x) for x in inserted_spans]))
 
     DB_CURSOR.execute(
