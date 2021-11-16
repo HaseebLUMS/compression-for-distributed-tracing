@@ -5,7 +5,7 @@ build_database = importlib.import_module("build-database")
 database_stats = importlib.import_module("database-stats")
 
 def main():
-	extract_traces.main()
+	#extract_traces.main()
 	build_database.main("original")
 	build_database.main("compressed")
 	orig_stats = database_stats.main("original")

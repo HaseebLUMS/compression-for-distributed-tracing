@@ -189,6 +189,7 @@ def populate_tables(traces_dir):
             print("Completed " + str(count) + " files.")
 
 def main(db_type):
+    print("Building database: " + db_type)
     global db
     global DB
     global DB_CURSOR
@@ -198,6 +199,7 @@ def main(db_type):
     
     create_tables()
     populate_tables("./traces")
+    print("===== Completed " + db + " =====")
 
 if __name__ == "__main__":
 	main("original")
