@@ -1,0 +1,89 @@
+{
+    "data": [
+        {
+            "traceId": "1",
+            "spans": [
+                {
+                    "traceID": "1",
+                    "spanID": "1",
+                    "flags": 1,
+                    "operationName": "op1",
+                    "logs": [
+                        {
+                            "fields": [
+                                {
+                                    "key": "key1",
+                                    "value": "value1"
+                                },
+                                {
+                                    "key": "key2",
+                                    "value": "value2"
+                                },
+                                {
+                                    "key": "key3",
+                                    "value": "value3"
+                                }
+                            ]
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "key": "key1",
+                                    "value": "value1"
+                                },
+                                {
+                                    "key": "key2",
+                                    "value": "value2"
+                                },
+                                {
+                                    "key": "key3",
+                                    "value": "value3"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "traceID": "1",
+                    "spanID": "1",
+                    "flags": 1,
+                    "operationName": "op1",
+                    "logs": [
+                        {
+                            "fields": [
+                                {
+                                    "key": "key1",
+                                    "value": "value1"
+                                },
+                                {
+                                    "key": "key2",
+                                    "value": "value2"
+                                },
+                                {
+                                    "key": "key3",
+                                    "value": "value3"
+                                }
+                            ]
+                        },
+                        {
+                            "fields": [
+                                {
+                                    "key": "key1",
+                                    "value": "value1"
+                                },
+                                {
+                                    "key": "key2",
+                                    "value": "value2"
+                                },
+                                {
+                                    "key": "key3",
+                                    "value": "value3"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

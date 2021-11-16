@@ -3,6 +3,7 @@ import json
 import glob
 from typing import Tuple, Union
 
+TRACE_DIR = "./traces"
 compressed_db = "compressed"
 original_db = "original"
 db = compressed_db
@@ -11,7 +12,6 @@ build_mysql_connection = importlib.import_module("build-mysql-connection")
 DB, DB_CURSOR = (None, None)
 
 def get_create_table_query(table_name, fields):
-    # TODO create foriegn keys
     query = "CREATE TABLE IF NOT EXISTS " + table_name + " ( "
     for field in fields:
         query += ("`" + field + "` ") 
@@ -113,7 +113,7 @@ def insert_log_in_db(log) -> int:
     inserted_fields = []
     for field in log["fields"]:
         inserted_fields += [insert_field_in_db(field)]
-    inserted_fields = list(set(inserted_fields))
+    inserted_fields = list(set([str(x) for x in inserted_fields]))
     
     res = get_id_if_log_already_inserted(inserted_fields)
     if res[1] == False:
@@ -136,7 +136,7 @@ def insert_span_in_db(span) -> int:
     inserted_logs = []
     for log in span["logs"]:
         inserted_logs += [insert_log_in_db(log)]
-    inserted_logs = list(set(inserted_logs))
+    inserted_logs = list(set([str(x) for x in inserted_logs]))
 
     res = get_id_if_span_already_inserted(inserted_logs)
     if res[1] ==  False:
@@ -159,7 +159,7 @@ def insert_trace_in_db(trace) -> int:
     inserted_spans = []
     for span in trace["spans"]:
         inserted_spans += [insert_span_in_db(span)]
-    inserted_spans = list(set(inserted_spans))
+    inserted_spans = list(set([str(x) for x in inserted_spans]))
 
     res = get_id_if_trace_already_inserted(inserted_spans)
     if res[1] == False:
@@ -189,7 +189,6 @@ def populate_tables(traces_dir):
             print("Completed " + str(count) + " files.")
 
 def main(db_type):
-    print("Building database: " + db_type)
     global db
     global DB
     global DB_CURSOR
@@ -197,8 +196,9 @@ def main(db_type):
     db = db_type
     DB, DB_CURSOR = build_mysql_connection.main(db)
     
+    print("Building database: " + db_type)
     create_tables()
-    populate_tables("./traces")
+    populate_tables(TRACE_DIR)
     print("===== Completed " + db + " =====")
 
 if __name__ == "__main__":

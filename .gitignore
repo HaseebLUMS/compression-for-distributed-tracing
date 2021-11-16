@@ -134,3 +134,6 @@ dmypy.json
 
 # Backup SQL files
 backup*.sql
+
+# tmp files
+tmp*
