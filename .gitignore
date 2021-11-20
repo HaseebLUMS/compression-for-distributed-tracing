@@ -131,6 +131,7 @@ dmypy.json
 # Directories
 /traces
 /tmp
+/results
 
 # Backup SQL files
 backup*.sql

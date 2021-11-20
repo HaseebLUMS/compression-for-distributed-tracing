@@ -37,7 +37,6 @@ def create_tables():
         for table_name in table_names:
             fields = schema["tableData"][table_name]
             query = get_create_table_query(table_name, fields)
-            print("Executing: " + query)
             DB_CURSOR.execute(query)
 
 def get_id_if_field_already_inserted(field) -> Tuple[Union[int, None], bool]:
@@ -178,8 +177,11 @@ def insert_trace_in_db(trace) -> int:
     else:
         return res[0]
 
-def populate_tables(traces_dir):
+def populate_tables(traces_dir, num_traces=0):
     files = glob.glob(traces_dir + "/*.json")
+    if num_traces > 0:
+        files = files[:num_traces]
+    
     for count, file in enumerate(files):
         with open(file) as f:
             traces = json.load(f)
@@ -188,7 +190,17 @@ def populate_tables(traces_dir):
         if ((count % 10 == 0) or (count == len(files) - 1)):
             print("Completed " + str(count) + " files.")
 
-def main(db_type):
+def clear_database(db):
+    DB_CURSOR.execute("SELECT CONCAT('DROP TABLE IF EXISTS `', table_name, '`;') \
+        FROM information_schema.tables \
+        WHERE table_schema = '"+db+"';"
+    )
+    drop_queries = DB_CURSOR.fetchall()
+    for query in drop_queries:
+        DB_CURSOR.execute(query[0])
+    DB.commit()
+    
+def main(db_type, num_traces=0):
     global db
     global DB
     global DB_CURSOR
@@ -197,8 +209,9 @@ def main(db_type):
     DB, DB_CURSOR = build_mysql_connection.main(db)
     
     print("Building database: " + db_type)
+    clear_database(db)
     create_tables()
-    populate_tables(TRACE_DIR)
+    populate_tables(TRACE_DIR, num_traces)
     print("===== Completed " + db + " =====")
 
 if __name__ == "__main__":
