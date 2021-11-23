@@ -10,8 +10,9 @@ Steps:
 1) Follow the [article](https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941) for setting up distributed tracing and hosting a microservices site
 2) Visit the hosted site and do some actions that will generate some traces(in future, this step will be automated)
 3) Setup MySQL and create two empty databases: "original" and "compressed" (In future, this step will be automated)
-3) Run `run.py`
-    3.1) The traces will get stored in a newly created directory `traces`
-    3.2) The two databases will get populated
-    3.3) The original db will have all the traces in full form
-    3.4) The compressed db will also have all traces but in the compressed form.  
+4) Create an emoty directory `results` where all the comparison (original db vs compressed db) results will be stored (too lazy to write a line of code for this). 
+5) Run `run.py`
+    4.1) The traces will get stored in a newly created directory `traces`
+    4.2) The two databases will get populated
+    4.3) The original db will have all the traces in full form
+    4.4) The compressed db will also have all traces but in the compressed form.  
