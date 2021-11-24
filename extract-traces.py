@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from hurry.filesize import size
 
-LIMIT_TRACES="200"
+LIMIT_TRACES="320"
 API_ENDPOINT = "http://127.0.0.1:16686/api/traces"
 ALL_TRACES_ENDPOINT = API_ENDPOINT + "?limit="+ LIMIT_TRACES +"&service=customer"
 TRACES_DIR = "./traces"

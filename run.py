@@ -3,7 +3,7 @@ import json
 
 compressed_db = "compressed"
 original_db = "original"
-num_traces = 200
+num_traces = 350
 
 extract_traces = importlib.import_module("extract-traces")
 build_database = importlib.import_module("build-database")
