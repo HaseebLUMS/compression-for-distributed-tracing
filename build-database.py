@@ -1,7 +1,9 @@
 import importlib
-import json
 import glob
+import json
+from time import perf_counter
 from typing import Tuple, Union
+
 
 TRACE_DIR = "./traces"
 compressed_db = "compressed"
@@ -211,8 +213,11 @@ def main(db_type, num_traces=0):
     print("Building database: " + db_type)
     clear_database(db)
     create_tables()
+    start_time = perf_counter()
     populate_tables(TRACE_DIR, num_traces)
+    end_time = perf_counter()
     print("===== Completed " + db + " =====")
+    return end_time - start_time
 
 if __name__ == "__main__":
 	main("original")

@@ -27,7 +27,7 @@ def get_size(db, db_cursor, db_name):
     db.commit()
     return res[1]
 
-def compare(original, compressed):
+def compare(original, compressed, time_taken_by_original_db, time_taken_by_compressed_db):
     res = {
         "fields": {
             "o": 0,
@@ -40,6 +40,10 @@ def compare(original, compressed):
         "size": {
             "o": 0,
             "c": 0
+        },
+        "time": {
+            "o": time_taken_by_original_db,
+            "c": time_taken_by_compressed_db
         }
     }
 
@@ -51,7 +55,7 @@ def compare(original, compressed):
     res["size"]["c"] = float(get_size(C_DB, C_DB_CURSOR, compressed))
     return res
 
-def main(original_db, compressed_db):
+def main(original_db, compressed_db, time_taken_by_original_db, time_taken_by_compressed_db):
     global O_DB
     global C_DB
     global O_DB_CURSOR
@@ -59,7 +63,7 @@ def main(original_db, compressed_db):
 
     O_DB, O_DB_CURSOR = build_mysql_connection.main(original_db)
     C_DB, C_DB_CURSOR = build_mysql_connection.main(compressed_db)
-    return compare(original_db, compressed_db)
+    return compare(original_db, compressed_db, time_taken_by_original_db, time_taken_by_compressed_db)
 
 if __name__ == "__main__":
 	main("original")
